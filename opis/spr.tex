@@ -1,0 +1,418 @@
+\documentclass[a4paper,10pt]{article}
+
+%% Language and font encodings
+\usepackage[english,polish]{babel}
+%%\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{polski}
+%\usepackage[utf8]{inputenc}
+
+
+\usepackage[cp1250]{inputenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\numberwithin{equation}{subsection}
+\usepackage{graphicx}
+\usepackage{color}
+\newtheorem{twr}{Definicja}
+\usepackage{amsfonts}
+
+
+
+\usepackage{subfig}
+
+\usepackage{url}
+%\usepackage{hyperref}
+
+%opening
+\title{GOMOKU - czyli kó³ko krzy¿yk dla profesjonalistów}
+\author{Agnieszka Rabiej}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Celem projektu by³o napisanie gry komputerowej w jêzuku C++ z wykorzystaniem poznanych na zajêciach elementów GUI oraz techniki programowania obiektowego.
+\end{abstract}
+
+\section{Zasady gry}
+Popularna gra GOMOKU to tak naprawdê rozbudowana wersja jeszcze popularniejszej gry kó³ko krzy¿yk. 
+W rozgrywce bior¹ udzia³ dwaj gracze, jeden z nich pos³uguje siê pionkiem 'x', a drugi 'o'. Gracze na przemian umieszczaj¹ swój pionek na planszy,
+a raz ustawiony pionek nie mo¿e ju¿ zostaæ przestawiony. Aby zapewniæ sobie zwyciestwo, jedyne co nale¿y zrobiæ to ustawiæ piêc swoich pionków w rêdzie pionowo, poziomo lub na ukos.
+Z pozoru wydawaæ by siê mog³o to banalnie proste, ale czy na pewno? 
+Jak¹ tatktykê powinien obraæ gracz by przechytrzyæ przeciwnika, zagraæ ofensywnie czy mo¿e defensywnie? W przypadku, gdy ¿adnemu z graczy nie uda siê doprowadziæ do wygranej, a wszystkie pola na planszy s¹ ju¿ zajête, gra koñczy siê remisem.
+
+\section{Projekt}
+Projekt sk³ada siê z czterech oddzielnym klas, a ka¿da z nich ma w nim swoje zadania. 
+
+\begin{itemize}
+ \item Klasa tic tac toe gui jest odpowiedzialna za wszystko to co u¿ytkowanik widzi na ekranie,
+w niej obs³ugiwane jest klikniêcie myszk¹, aby wstawiæ pionek na planszê, wyœwietlanie informacji na temat rezultatu rozgrywki oraz wybór czy jako przeciwnika wybieramy drugiego gracza czy mo¿e komputer.
+
+\item w przypadku kiedy wybraliœmy wersjê gry z komputerem z pomoc¹ przychodzi nam klasa tic tac toe engine. To tutaj zosta³a zaimplementowana ca³a obs³uga ruchów ktore wykonuje nasz komputerowy przeciwnik.
+
+\item klasa board - to nasza plansza, potrafi ona rozpoznaæ czy wybrane przez gracza miejsce na planszy jest ju¿ zajête przez przeciwnika, a przede wszystkim czy ta lokalizaja zosta³a okreœlona jako lokalizaja naszej planszy.
+
+\item klasa paw, czyli pionek, którym pos³uguje siê gracz. Obiekt tej klasy przechowuje informacjê na temat tego, do którego gracza nale¿y oraz gdzie zosta³ umiejscowiony 
+
+\end{itemize}
+
+\subsection{Zasada dzia³ania programu}
+Na poczatku gracz wybiera jedn¹ z dwóch opcji, poprzez naciœniêcie na klawiaturze przycisku odpowiednio t(two gamers) aby graæ z przeciwnikiem w postaci drugiej fizycznej osoby, b¹dŸ klawisz k - aby graæ z komputerem.
+Zaczyna siê gra, na zmiane gracze wykonuj¹ ruchy, a¿ któryœ z nich wygra lub plansza bêdzie zape³niona.
+Najciekawsz¹ czêœci¹ programu jest sposób wyboru ruchu dla komputera, dlatego w³aœnie skupiê siê na tej czêœci programu.
+
+\subsubsection{Jak komputer decyduje gdzie postawiæ pionek}
+W celu podjêcia decyzji, gdzie postawiæ pionek w swoim ruchu komputer tworzy sobie dwie tablice pomocnicze. Wymiary tych tablic s¹ takie same jak wymiary planszy gry.
+Ka¿da z nich przechowuje informacje na temat 'wagi' danego pola. Jedna tablica s³u¿y do ocenienia wag dla przeciwnika, a druga dla samego siebie. 
+Przyjê³am, ¿e poszczególne ustawienia pionków maj¹ ustalone wagi, im wartoœæ jest wy¿sza tym wiêksze szanse na wygran¹ przy postawieniu w tym miejscu swojego pionka - w przypadku tablicy wag wyliczanej dla samego siebie. 
+Im wy¿sza waga w tablicy wyliczonej u przeciwnika tym bardziej komputer powinien blokowaæ to pole, ¿eby nie przegraæ. 
+W programie odró¿niamy nastêpuj¹ce wagi:
+\begin{itemize}
+ \item 5 - cztery pionki tego samego gracza pod rz¹d
+ \item 4 - jeden pionek z jedej strony pola i dwa z drugiej (razem z polem w œrodku tworz¹ 4)
+ \item 3 - miejsce w którym po dodaniu pionka tworzymy 3 trójki, poniewa¿ z dwóch stron mamy dwa pod rz¹d pionki, nie bierzemy tu pod uwagê takich stron, które po wstawieniu w srodek pionka stworz¹ 5 pod rz¹d, poniewa¿ jest to ju¿ sprawdzane wczeœniej i posiada wy¿sz¹ wagê 
+\item 3 - trójka 'krytyczna', czyli taka, któr¹ jeœli nie zastawimy z którejœ strony to przeciwnik bêdzie móg³ ustawiæ czwarty pionek pod rz¹d i wtedy doprowadzi to do pora¿ki poniewa¿ taka czwórka nie bêdzie zastawiona z ¿adnej strony
+\item 2 - 'normalna' 3 - trzy pionki pod rz¹d, ale z jednej strony zastawione pionkiem przeciwnika lub dwa pionki pod rz¹d
+\item 1 - jeden pionek 
+ \end{itemize}
+Program przechowuje informacje o najwy¿szej wadze w danej tablicy i
+jeœli tablica wag przeciwnika pokazuje wartoœæ wy¿sz¹ lub równ¹ 3 komputer
+i je¿eli najwy¿sza waga przeciwnika jest wy¿sza od najwy¿szej wagi komputera, to komputer blokuje ruch przeciwnika.
+W przeciwnym razie komputer wykonuje taki ruch by powiêkszyæ swoje szanse na wygran¹, a nie tylko siê broniæ.
+
+\section{Opis dzia³ania programu}
+
+Program kompilujemy z konsoli linuxowej, za pomoc¹ komendy g++ main.cpp tic\_tac\_toe\_gui.cpp board.cpp paw.cpp tic\_tac\_toe\_engine.cpp -std=c++11 -lcurses 
+oraz standardowo uruchamiamy komend¹ ./a.out. 
+
+W funkcji main, inicjalizujemy now¹ grê - czyli tworzymy obiekt klasy tic\_tac\_toe\_gui oraz wywo³ujemy na nim metode build\_gui\_game().
+
+\subsection{Klasa tic\_tac\_toe\_gui}
+W klasie tic\_tac\_toe\_gui znajduje siê ca³a obs³uga programu zwi¹zana z czêœci¹ gui'ow¹. Deklaracja klasy w pliku nag³ówkowym ".h" wygl¹da nastêpuj¹co:
+
+\begin{verbatim}
+ class tic_tac_toe_gui{
+    public:
+        board current_board;
+        tic_tac_toe_engine engine;
+        bool two_gamer;
+        char current_gamer = 'x';
+    public:
+        void init();
+        void build_gui_game();
+        void refresh_board(WINDOW* okno);
+        void chose_gamer(int we);
+        void clean_board(WINDOW* okno);
+        void print_winner(WINDOW* okno, char winner);
+        bool check_remis(WINDOW* okno);
+};
+
+\end{verbatim}
+
+gdzie current\_board reprezentuje obiekt klasy board, okreœla nam aktualn¹ tablice do gry, engine - obiekt klasy tic\_tac\_toe\_engine -
+silnik naszej gry odpowiedzialny g³ównie za wyliczanie ruchów wykonywanych przez kompyter, zmienn¹ typu bool - two\_gamer - okreœlaj¹c¹
+czy gracz wybra³ wersjê gry z komputerem czy z drugim graczem - cz³owiekiem oraz zmienn¹ typu char - current\_gamer - która okreœla nam czy
+ruch wykonuje gracz 'x' czy 'o'.
+
+\subsubsection{Funkcja init()}
+\begin{verbatim}
+ void tic_tac_toe_gui::init(){
+    board c_board;
+    c_board.new_board();
+    tic_tac_toe_engine eng;
+    this->current_board = c_board;
+    this->engine = eng;
+};
+\end{verbatim}
+
+Tworzymy obiekt klasy board oraz obiekt klasy engine i przypisujemy je do odpowiednich slotów w funkcji tic\_tac\_toe\_gui.
+
+
+\subsubsection{Funkcja build\_gui\_game()}
+
+\begin{verbatim}
+ 
+
+void tic_tac_toe_gui::build_gui_game(){
+    WINDOW* okno = initscr();
+    noecho();
+    curs_set(0);
+    nodelay(okno, 1);
+    mmask_t mmask;
+    MEVENT mysz;
+    keypad(stdscr, TRUE);
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION,NULL);
+    int we = 0;
+    bool h = false;
+    chose_gamer(we);
+    refresh_board(okno); 
+    
+    while(true){
+        we = getch();
+        if(we == KEY_MOUSE){
+            if(getmouse(&mysz) == OK){
+                if(this->current_board.check_click(mysz.y,mysz.x, this->current_gamer)){
+                    if(this->current_gamer == 'x'){
+                        this->current_gamer = 'o';
+                    }else this->current_gamer = 'x';
+
+                    vector <int> coordinate;
+                    h = this->engine.check_winner(this->current_board,mysz.y,mysz.x);
+                    refresh_board(okno);
+                    if(this->two_gamer == true){
+                        coordinate = this->engine.count_movement(this->current_board, 
+								 this->current_gamer);
+                        vector <int> coordinate_computer;
+                        coordinate_computer = this->current_board.add_computer_movement(coordinate,
+								  this->current_gamer);
+
+                        if(this->current_gamer == 'x'){
+                            this->current_gamer = 'o';
+                        }else this->current_gamer = 'x';
+
+                        h = this->engine.check_winner(this->current_board,coordinate_computer[0],
+						      coordinate_computer[1]);
+                        if(check_remis(okno)){
+                            print_winner(okno, 'r');
+                            refresh();
+                            sleep(3);
+                            clean_board(okno);
+                            refresh();
+                            sleep(3);
+                        }
+                    }
+                refresh_board(okno);
+                if(h == true ){
+                    print_winner(okno, this->current_gamer);
+                    refresh();
+                    sleep(3);
+                    clean_board(okno);
+                    refresh();
+                    sleep(3);
+                    break;
+                }
+                }
+            }
+        }else{    
+            if(we == 'q') break;
+        }refresh();
+    }
+    endwin();
+
+};
+\end{verbatim}
+
+Inicjalizujemy okno oraz w³¹czamy obs³ugê myszy i wybieramy liczbe graczy, a nastêpnie jeœli zostanie naciœniety klawisz myszy sprawdzamy czy znajdujemy siê 
+w zakresie planszy, zmieniamy gracza, sprawdzamy czy nie nast¹pi³ koniec gry, i w zale¿noœci od tego czy gramy z komputerem
+czy z drugim graczem, nastêpuje kolejny ruch, ponowna zmiana gracza oraz sprawdzenie zwyciezcy. Ruchy graczy wykonywane s¹ w pêtli
+i jeœli nast¹pi zakonczenie gry - wygrana lub remis, to wychodzimy z petli i wyswietlana jest informacja o zwyciezcy gry. Program koñczy dzia³anie.
+
+\subsubsection{Funkcja check\_remis}
+
+\begin{verbatim}
+bool tic_tac_toe_gui::check_remis(WINDOW* okno){
+    bool remis = false;
+    for(int i=0; i<=board_size; i++){
+        for(int j=0; j<=board_size; j++){
+            paw current_paw;
+            current_paw = this->current_board.get_element_to_draw(i,j);
+            if(current_paw.name[0] != '*'){
+                remis = true;
+            }else return false;
+        }
+    }
+    return remis;
+} 
+\end{verbatim}
+Sprawdzamy po kolei wszystkie pola na planszy i jeœli któreœ jest równe '*' zwracamy false, czyli nie nast¹pi³ remis, w przeciwnym razie
+funkcja zwróci true - remis.
+
+\subsubsection{Funkcja clean\_board}
+
+\begin{verbatim}
+void tic_tac_toe_gui::clean_board(WINDOW* okno){
+    for(int i=0; i<=board_size; i++){
+        for(int j=0; j<=board_size; j++){
+            paw current_paw;
+            current_paw = this->current_board.get_element_to_draw(i,j);
+            mvprintw(current_paw.y, current_paw.x, "-");
+        }
+    }
+};
+ 
+\end{verbatim}
+
+Funkcja czyœci tablice - s³u¿y do wizualizacji zakoñczenia dzia³ania programu poprzez wype³nienie pól znakami '-'.
+
+\subsubsection{Funkcja print\_winner}
+
+\begin{verbatim}
+
+void tic_tac_toe_gui::print_winner(WINDOW* okno, char winner){
+    if(winner == 'o'){
+        mvprintw(0, 0, "wygral x");    
+    }else if(winner == 'x'){
+        mvprintw(0, 0, "wygral o");
+    }else mvprintw(0, 0, "remis");
+};
+ 
+\end{verbatim}
+Wyœwietla komunikat o zwyciezcy rozgrywki, b¹dŸ o remisie.
+
+
+\subsection{Funkcja chose\_gamer}
+\begin{verbatim}
+
+void tic_tac_toe_gui::chose_gamer(int we){
+    while(true){
+        we = getch();
+        if(we== 'k'){
+            this->two_gamer = true;
+            break;
+        }else if(we == 't'){
+            this->two_gamer = false;
+            break;
+        }
+    }
+};
+ 
+\end{verbatim}
+
+Poprzez naciœniecie klawisza decydujemy czy gramy z 'k' - komputerem lub 't' - drugim graczem. Wartoœæ przechowywana jest przez egzemplar klasy.
+
+\subsubsection{Funkcja refresh\_board}
+\begin{verbatim}
+ 
+void tic_tac_toe_gui::refresh_board(WINDOW* okno){
+    for(int i=0; i<=board_size; i++){
+        for(int j=0; j<=board_size; j++){
+            paw current_paw;
+            current_paw = this->current_board.get_element_to_draw(i,j);
+            mvprintw(current_paw.y, current_paw.x, current_paw.name);
+        }
+    }
+};
+ 
+\end{verbatim}
+
+S³u¿y do wyœwietlenia aktualnego stanu gry.
+
+
+
+\subsection{Klasa tic\_tac\_toe\_engine}
+
+\begin{verbatim}
+ 
+class tic_tac_toe_engine{
+    public:
+        bool check_winner(board board_t, int y, int x);
+        vector <int> count_movement(board board_t, char name);
+        int count_state(board * board_t, int i, int j, char name);
+};
+
+\end{verbatim}
+Klasa w g³ównej mierze s³u¿y do obs³ugi ruchów komputera.
+Wy¿ej zosta³ opisany dok³adnie sposób realizajci obs³ugi zdarzeñ. Œciœlej ujmuj¹c w poszczególnych metodach mamy:
+\subsubsection{Funkcja count\_movement}
+Tutaj wyliczany jest dok³adny ruch komputera na podstawie przygotowanych tablic z wagami poszczególnych ruchów (wyliczane w funkcji
+count\_state).
+Komputer podejmuje decyzje czy graæ ofensywnie czy defensywnie
+\subsubsection{Funkcja count\_state}
+Wylicza wagi ruchów dla tablic.
+\subsubsection{Funkcja check\_winner}
+Sprawdza czy na planszy nast¹pi³a wygrana któregoœ z graczy.
+
+\subsection{Klasa board}
+
+\begin{verbatim}
+ class board{
+    public:
+        paw tab[board_size+1][board_size+1];
+    public:
+        void new_board();
+        paw get_element_to_draw(int i, int j);
+        bool check_click(int y, int x, char current_gamer);
+        vector <int> add_computer_movement(vector <int> tab, char current_gamer);
+};
+
+\end{verbatim}
+Klasa przechowuje tablice pionków - jako planszê gry oraz posiada metody:
+
+\subsubsection{Funkcja new\_board}
+
+\begin{verbatim}
+
+void board::new_board(){
+
+    for(int i=0; i<=board_size; i++){
+        for(int j=0; j<=board_size; j++){
+            paw new_paw_element;
+            new_paw_element.new_paw('*', i+3, j+7);
+            this->tab[i][j] = new_paw_element;
+        }
+    }
+};
+
+\end{verbatim}
+Tworzy now¹ tablicê - czyli tablicê pionków w odpowiednim miejscu na ekranie.
+
+\subsubsection{Funkcja get\_element\_to\_draw}
+
+\begin{verbatim}
+
+paw board::get_element_to_draw(int i, int j){
+    paw n;
+    n = this->tab[i][j];
+    return n;
+};
+
+\end{verbatim}
+Zwraca obiekt klasy paw - ¿eby mo¿na go by³o narysowaæ w klasie tic\_tac\_toe\_gui.
+
+\subsubsection{Funkcja add\_computer\_movement}
+
+Dodaje do tablicy ruch komputera.
+
+\subsubsection{Funkcja check\_click}
+\begin{verbatim}
+ 
+bool board::check_click(int y, int x, char current_gamer){
+    if(y>=this->tab[0][0].y && y<=this->tab[board_size][board_size].y &&
+x>=this->tab[0][0].x && x<=this->tab[board_size][board_size].x){
+        for(int i=0; i<=board_size; i++){
+            for(int j=0; j<=board_size; j++){
+                if(y == this->tab[i][j].y && x == this->tab[i][j].x &&
+		   this->tab[i][j].name[0] == '*'){
+                    this->tab[i][j].name[0] = current_gamer;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+\end{verbatim}
+Sprawdzaczy ruch gracza jest mo¿liwy - czyli czy znajduje siê w obrêbie planszy oraz czy dane pole nie jest ju¿ zajête.
+
+\subsection{Klasa paw}
+
+\begin{verbatim}
+ class paw{
+    public:
+        char name[2];
+        int y;
+        int x;
+    public:
+        void new_paw(char name, int y, int x);
+};
+\end{verbatim}
+Klasa posiada pola przechowuj¹ce nazwê gracza - 'o', 'x', '*' - wolne pole oraz wartoœci x i y wskazuj¹ce na umiejscowienie 
+pionka.
+
+\end{document}
